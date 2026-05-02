@@ -14,6 +14,9 @@ This VS Code extension instantly resolves Laravel Facades to their underlying bo
 - **Core Laravel Support**: Comes pre-mapped with all core Laravel facades for zero-latency resolution.
 - **Dynamic Custom Facades**: Automatically searches your `app/Providers/` directory to resolve your own custom Facades dynamically!
 
+## Preview
+![Usage Preview](usage-preview.gif)
+
 ## Usage
 
 1. Open any PHP file.
