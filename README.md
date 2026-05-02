@@ -1,5 +1,8 @@
 # Laravel Facade Resolver
 
+[![Marketplace](https://img.shields.io/badge/Marketplace-v1.0.0-007ACC?logo=visual-studio-code&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=pospisk.laravel-facade-resolver)
+[![PHP Version](https://img.shields.io/badge/PHP-%3E%3D%208.3-8892BF?logo=php)](https://packagist.org/packages/laravel/framework)
+
 Speed up your Laravel & Larastan (PHPStan Level 10) development workflow!
 
 This VS Code extension instantly resolves Laravel Facades to their underlying bound classes when you hover over them. Instead of clicking through `Facade -> getFacadeAccessor() -> Global Search for bindings`, this extension does it all automatically for you.
