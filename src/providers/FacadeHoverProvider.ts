@@ -1,0 +1,133 @@
+import * as vscode from 'vscode';
+import { DefinitionFinder } from '../utils/DefinitionFinder.js';
+import { IFacadeResolver } from '../interfaces/IFacadeResolver.js';
+
+export class FacadeHoverProvider implements vscode.HoverProvider {
+    private definitionFinder: DefinitionFinder;
+    private facadeResolver: IFacadeResolver;
+
+    constructor(definitionFinder: DefinitionFinder, facadeResolver: IFacadeResolver) {
+        this.definitionFinder = definitionFinder;
+        this.facadeResolver = facadeResolver;
+    }
+
+    public async provideHover(
+        document: vscode.TextDocument,
+        position: vscode.Position,
+        token: vscode.CancellationToken
+    ): Promise<vscode.Hover | null> {
+        const wordRange = document.getWordRangeAtPosition(position);
+        if (!wordRange) {
+            return null;
+        }
+
+        const word = document.getText(wordRange);
+
+        // Basic heuristic: check if it's followed by `::`
+        const nextCharsRange = new vscode.Range(wordRange.end, wordRange.end.translate(0, 2));
+        const nextChars = document.getText(nextCharsRange);
+        if (nextChars !== '::') {
+            return null;
+        }
+
+        // 1. Try to see if it's a known core facade by its class name
+        const directResolve = this.resolveByFacadeName(word);
+        if (directResolve) {
+            return this.createHover(word, directResolve);
+        }
+
+        // 2. Find the definition of the facade class
+        const definitionResult = await this.definitionFinder.findDefinitionEx(document, position);
+        if (!definitionResult) {
+            return null;
+        }
+
+        const { uri: targetUri, range: targetRange } = definitionResult;
+
+        // Read the facade class content
+        const facadeContentBytes = await vscode.workspace.fs.readFile(targetUri);
+        const facadeContent = Buffer.from(facadeContentBytes).toString('utf-8');
+        const lines = facadeContent.split(/\r?\n/);
+
+        // Extract a chunk of lines around the definition to search for accessors or @see tags
+        const startLine = Math.max(0, targetRange.start.line - 5);
+        const endLine = Math.min(lines.length, targetRange.start.line + 25);
+        const chunk = lines.slice(startLine, endLine).join('\n');
+
+        // Check if it's an ide_helper file with @see annotations
+        const seeMatch = chunk.match(/@see\s+\\?([A-Za-z0-9_]+(?:\\[A-Za-z0-9_]+)+)/);
+        if (seeMatch) {
+            return this.createHover(word, seeMatch[1]);
+        }
+
+        // Extract getFacadeAccessor
+        const accessorMatch = chunk.match(/protected\s+static\s+function\s+getFacadeAccessor\(\)\s*\{\s*return\s+['"]([^'"]+)['"]/);
+        
+        if (!accessorMatch) {
+            // Check if it returns a class name directly, e.g., return Something::class
+            const classMatch = chunk.match(/protected\s+static\s+function\s+getFacadeAccessor\(\)\s*\{\s*return\s+([A-Za-z0-9_\\\\]+)::class/);
+            if (classMatch) {
+                return this.createHover(word, classMatch[1]);
+            }
+            return null;
+        }
+
+        const accessorKey = accessorMatch[1];
+
+        // Resolve the class
+        const resolvedClass = await this.facadeResolver.resolve(accessorKey);
+        
+        if (resolvedClass) {
+            return this.createHover(word, resolvedClass);
+        }
+
+        return null;
+    }
+
+    private resolveByFacadeName(name: string): string | null {
+        const coreFacadesByName: Record<string, string> = {
+            'App': 'Illuminate\\Foundation\\Application',
+            'Artisan': 'Illuminate\\Contracts\\Console\\Kernel',
+            'Auth': 'Illuminate\\Auth\\AuthManager',
+            'Blade': 'Illuminate\\View\\Compilers\\BladeCompiler',
+            'Cache': 'Illuminate\\Cache\\CacheManager',
+            'Config': 'Illuminate\\Config\\Repository',
+            'Cookie': 'Illuminate\\Cookie\\CookieJar',
+            'Crypt': 'Illuminate\\Encryption\\Encrypter',
+            'DB': 'Illuminate\\Database\\DatabaseManager',
+            'Event': 'Illuminate\\Events\\Dispatcher',
+            'File': 'Illuminate\\Filesystem\\Filesystem',
+            'Gate': 'Illuminate\\Contracts\\Auth\\Access\\Gate',
+            'Hash': 'Illuminate\\Hashing\\HashManager',
+            'Lang': 'Illuminate\\Translation\\Translator',
+            'Log': 'Illuminate\\Log\\LogManager',
+            'Mail': 'Illuminate\\Mail\\Mailer',
+            'Notification': 'Illuminate\\Notifications\\ChannelManager',
+            'Password': 'Illuminate\\Auth\\Passwords\\PasswordBrokerManager',
+            'Queue': 'Illuminate\\Queue\\QueueManager',
+            'Redirect': 'Illuminate\\Routing\\Redirector',
+            'Redis': 'Illuminate\\Redis\\RedisManager',
+            'Request': 'Illuminate\\Http\\Request',
+            'Response': 'Illuminate\\Routing\\ResponseFactory',
+            'Route': 'Illuminate\\Routing\\Router',
+            'Schema': 'Illuminate\\Database\\Schema\\Builder',
+            'Session': 'Illuminate\\Session\\SessionManager',
+            'Storage': 'Illuminate\\Filesystem\\FilesystemManager',
+            'URL': 'Illuminate\\Routing\\UrlGenerator',
+            'Validator': 'Illuminate\\Validation\\Factory',
+            'View': 'Illuminate\\View\\Factory'
+        };
+
+        return coreFacadesByName[name] || null;
+    }
+
+    private createHover(facadeName: string, resolvedClass: string): vscode.Hover {
+        if (resolvedClass.startsWith('\\')) {
+            resolvedClass = resolvedClass.substring(1);
+        }
+        const md = new vscode.MarkdownString();
+        md.isTrusted = true;
+        md.appendMarkdown(`🎯 **Facade Resolver:** \`use ${resolvedClass};\``);
+        return new vscode.Hover(md);
+    }
+}
