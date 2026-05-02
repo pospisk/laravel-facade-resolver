@@ -41,6 +41,9 @@ This extension contributes the following settings:
 
 ## [Release Notes](./CHANGELOG.md)
 
+### 1.1.0
+- Added ability to import facade classes by clicking on import in the tooltip
+
 ### 1.0.1
 - Added missing Laravel Facades (`Broadcast`, `Bus`, `Context`, `Date`)
 

@@ -1,6 +1,8 @@
 # Change Log
 
 All notable changes to the "laravel-facade-resolver" extension will be documented in this file.
+## [1.1.0]
+- Added ability to import facade classes by clicking on import in the tooltip
 
 ## [1.0.1]
 - Added missing Laravel Facades: 
