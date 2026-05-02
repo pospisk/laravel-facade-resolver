@@ -4,6 +4,7 @@
   "description": "Quickly resolve Laravel Facades to their bound classes on hover. Designed to speed up PHPStan Level 10 development.",
   "version": "1.0.0",
   "publisher": "pospisk",
+  "icon": "icon.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/pospisk/laravel-facade-resolver.git"
