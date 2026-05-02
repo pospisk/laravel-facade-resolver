@@ -2,6 +2,23 @@
 
 All notable changes to the "laravel-facade-resolver" extension will be documented in this file.
 
+## [1.0.1]
+- Added missing Laravel Facades: 
+  - `Broadcast`
+  - `Bus`
+  - `Context`
+  - `Date`
+  - `Exceptions`
+  - `Hash`
+  - `Http`
+  - `Pipeline`
+  - `Process`
+  - `RateLimiter`
+  - `Response`
+  - `Schedule`
+  - `View`
+  - `Vite`
+
 ## [1.0.0]
 - Initial release.
 - Added Core Laravel Facade resolution mapping for blazing fast lookups.

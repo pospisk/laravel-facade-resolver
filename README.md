@@ -39,7 +39,10 @@ This extension contributes the following settings:
 
 - Custom facade resolution performs a basic regex search on `app/Providers`. It might not perfectly resolve highly dynamic bindings or bindings located in vendor packages.
 
-## Release Notes
+## [Release Notes](./CHANGELOG.md)
+
+### 1.0.1
+- Added missing Laravel Facades (`Broadcast`, `Bus`, `Context`, `Date`)
 
 ### 1.0.0
 - Initial release
