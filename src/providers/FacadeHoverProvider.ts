@@ -109,7 +109,7 @@ export class FacadeHoverProvider implements vscode.HoverProvider {
             'Log': 'Illuminate\\Log\\LogManager',
             'Mail': 'Illuminate\\Mail\\Mailer',
             'Notification': 'Illuminate\\Notifications\\ChannelManager',
-            'Password': 'Illuminate\\Auth\\Passwords\\PasswordBrokerManager',
+            'Password': 'Illuminate\\Contracts\\Auth\\PasswordBroker',
             'Pipeline': 'Illuminate\\Pipeline\\Pipeline',
             'Process': 'Illuminate\\Process\\Factory',
             'Queue': 'Illuminate\\Queue\\QueueManager',
@@ -138,7 +138,10 @@ export class FacadeHoverProvider implements vscode.HoverProvider {
         }
         const md = new vscode.MarkdownString();
         md.isTrusted = true;
-        md.appendMarkdown(`🎯 **Facade Resolver:** \`use ${resolvedClass};\``);
+        
+        const commandUri = vscode.Uri.parse(`command:laravelFacadeResolver.importClass?${encodeURIComponent(JSON.stringify(resolvedClass))}`);
+        md.appendMarkdown(`🎯 **Facade Resolver:** [Import](${commandUri}) \`use ${resolvedClass};\``);
+        
         return new vscode.Hover(md);
     }
 }
