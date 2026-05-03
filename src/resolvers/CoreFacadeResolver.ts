@@ -6,7 +6,7 @@ export class CoreFacadeResolver implements IFacadeResolver {
         'artisan': 'Illuminate\\Contracts\\Console\\Kernel',
         'auth': 'Illuminate\\Auth\\AuthManager',
         'auth.driver': 'Illuminate\\Contracts\\Auth\\Guard',
-        'auth.password': 'Illuminate\\Auth\\Passwords\\PasswordBrokerManager',
+        'auth.password': 'Illuminate\\Contracts\\Auth\\PasswordBroker',
         'blade.compiler': 'Illuminate\\View\\Compilers\\BladeCompiler',
         'cache': 'Illuminate\\Cache\\CacheManager',
         'cache.store': 'Illuminate\\Cache\\Repository',
@@ -40,6 +40,7 @@ export class CoreFacadeResolver implements IFacadeResolver {
         'view': 'Illuminate\\View\\Factory',
         'view.engine.resolver': 'Illuminate\\View\\Engines\\EngineResolver',
         'view.finder': 'Illuminate\\View\\FileViewFinder',
+        'Inertia': 'Inertia\\ResponseFactory',
     };
 
     public async resolve(accessor: string): Promise<string | null> {

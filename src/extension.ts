@@ -28,7 +28,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register provider
     const hoverDisposable = vscode.languages.registerHoverProvider(
-        { scheme: 'file', language: 'php' },
+        [
+            { scheme: 'file', language: 'php', pattern: '**/*.php' },
+            { scheme: 'untitled', language: 'php' }
+        ],
         hoverProvider
     );
 
@@ -44,7 +47,7 @@ export function activate(context: vscode.ExtensionContext) {
         const escapedFqcn = fqcn.replace(/\\/g, '\\\\');
         const useRegex = new RegExp(`^use\\s+${escapedFqcn}\\s*;`, 'm');
         if (useRegex.test(text)) {
-            // Already imported, do nothing silently
+            vscode.window.showInformationMessage(`${fqcn} is already imported.`);
             return;
         }
 

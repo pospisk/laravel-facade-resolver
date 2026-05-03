@@ -20,7 +20,7 @@ This VS Code extension instantly resolves Laravel Facades to their underlying bo
 ## Usage
 
 1. Open any PHP file.
-2. Hover your mouse cursor over a Laravel Facade (e.g. `Cache::`, `Auth::`, or `YourCustomFacade::`).
+2. Hover your mouse cursor over a Laravel Facade or Global Helper (e.g. `Cache::`, `Auth::`, `event()`, `__()`, or `YourCustomFacade::`).
 3. A tooltip will appear showing the fully qualified class name bound to that facade.
 
 ## Requirements
@@ -43,6 +43,11 @@ This extension contributes the following settings:
 
 ### 1.1.0
 - Added ability to import facade classes by clicking on import in the tooltip
+- Added **Global Helper Resolution**: Resolves Laravel's global helper functions (e.g., `event()`, `__()`, `redirect()`) to their underlying Dependency Injection Contracts, resolving Larastan's `noGlobalLaravelFunction` strict rules.
+- **Import Feedback**: The `[Import]` button will now display a notification if the class is already imported, instead of failing silently.
+- **New Helpers**: Added support for `abort()`, `abort_if()`, and `abort_unless()`.
+- **Bug Fixes**: Fixed missing `.js` extension on internal resolver imports which could cause activation issues in some environments.
+- **New Helpers**: Added support for `route()` resolving to `Illuminate\Contracts\Routing\UrlGenerator`.
 
 ### 1.0.1
 - Added missing Laravel Facades (`Broadcast`, `Bus`, `Context`, `Date`)

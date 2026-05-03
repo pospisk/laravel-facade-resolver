@@ -1,14 +1,17 @@
 import * as vscode from 'vscode';
 import { DefinitionFinder } from '../utils/DefinitionFinder.js';
 import { IFacadeResolver } from '../interfaces/IFacadeResolver.js';
+import { GlobalHelperResolver } from '../resolvers/GlobalHelperResolver.js';
 
 export class FacadeHoverProvider implements vscode.HoverProvider {
     private definitionFinder: DefinitionFinder;
     private facadeResolver: IFacadeResolver;
+    private globalHelperResolver: GlobalHelperResolver;
 
     constructor(definitionFinder: DefinitionFinder, facadeResolver: IFacadeResolver) {
         this.definitionFinder = definitionFinder;
         this.facadeResolver = facadeResolver;
+        this.globalHelperResolver = new GlobalHelperResolver();
     }
 
     public async provideHover(
@@ -23,17 +26,30 @@ export class FacadeHoverProvider implements vscode.HoverProvider {
 
         const word = document.getText(wordRange);
 
-        // Basic heuristic: check if it's followed by `::`
-        const nextCharsRange = new vscode.Range(wordRange.end, wordRange.end.translate(0, 2));
-        const nextChars = document.getText(nextCharsRange);
-        if (nextChars !== '::') {
+        const linePrefix = document.lineAt(position.line).text.substring(0, wordRange.start.character);
+        const lineSuffix = document.lineAt(position.line).text.substring(wordRange.end.character);
+
+        const isFacadeCall = lineSuffix.startsWith('::');
+        const isFunctionCall = /^\s*\(/.test(lineSuffix);
+        const isObjectMethodCall = /(->|\?->|::)\s*$/.test(linePrefix);
+        const isGlobalHelperCall = isFunctionCall && !isObjectMethodCall;
+
+        if (!isFacadeCall && !isGlobalHelperCall) {
             return null;
+        }
+
+        if (isGlobalHelperCall) {
+            const resolvedHelper = await this.globalHelperResolver.resolve(word);
+            if (resolvedHelper) {
+                return this.createHover(word, resolvedHelper, 'Global Helper:');
+            }
+            return null; // Don't process further if it's a function call
         }
 
         // 1. Try to see if it's a known core facade by its class name
         const directResolve = this.resolveByFacadeName(word);
         if (directResolve) {
-            return this.createHover(word, directResolve);
+            return this.createHover(word, directResolve, 'Facade Resolver:');
         }
 
         // 2. Find the definition of the facade class
@@ -57,7 +73,7 @@ export class FacadeHoverProvider implements vscode.HoverProvider {
         // Check if it's an ide_helper file with @see annotations
         const seeMatch = chunk.match(/@see\s+\\?([A-Za-z0-9_]+(?:\\[A-Za-z0-9_]+)+)/);
         if (seeMatch) {
-            return this.createHover(word, seeMatch[1]);
+            return this.createHover(word, seeMatch[1], 'Facade Resolver:');
         }
 
         // Extract getFacadeAccessor
@@ -67,7 +83,7 @@ export class FacadeHoverProvider implements vscode.HoverProvider {
             // Check if it returns a class name directly, e.g., return Something::class
             const classMatch = chunk.match(/protected\s+static\s+function\s+getFacadeAccessor\(\)\s*\{\s*return\s+([A-Za-z0-9_\\\\]+)::class/);
             if (classMatch) {
-                return this.createHover(word, classMatch[1]);
+                return this.createHover(word, classMatch[1], 'Facade Resolver:');
             }
             return null;
         }
@@ -78,7 +94,7 @@ export class FacadeHoverProvider implements vscode.HoverProvider {
         const resolvedClass = await this.facadeResolver.resolve(accessorKey);
         
         if (resolvedClass) {
-            return this.createHover(word, resolvedClass);
+            return this.createHover(word, resolvedClass, 'Facade Resolver:');
         }
 
         return null;
@@ -132,7 +148,7 @@ export class FacadeHoverProvider implements vscode.HoverProvider {
         return coreFacadesByName[name] || null;
     }
 
-    private createHover(facadeName: string, resolvedClass: string): vscode.Hover {
+    private createHover(facadeName: string, resolvedClass: string, prefix: string): vscode.Hover {
         if (resolvedClass.startsWith('\\')) {
             resolvedClass = resolvedClass.substring(1);
         }
@@ -140,7 +156,7 @@ export class FacadeHoverProvider implements vscode.HoverProvider {
         md.isTrusted = true;
         
         const commandUri = vscode.Uri.parse(`command:laravelFacadeResolver.importClass?${encodeURIComponent(JSON.stringify(resolvedClass))}`);
-        md.appendMarkdown(`🎯 **Facade Resolver:** [Import](${commandUri}) \`use ${resolvedClass};\``);
+        md.appendMarkdown(`🎯 **${prefix}** [Import](${commandUri}) \`use ${resolvedClass};\``);
         
         return new vscode.Hover(md);
     }
