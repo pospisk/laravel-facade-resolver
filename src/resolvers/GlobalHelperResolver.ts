@@ -1,8 +1,8 @@
-import { IFacadeResolver } from '../interfaces/IFacadeResolver.js';
+import { IFacadeResolver, FacadeResolution } from '../interfaces/IFacadeResolver.js';
 
 export class GlobalHelperResolver implements IFacadeResolver {
     
-    public async resolve(helperName: string): Promise<string | null> {
+    public async resolve(helperName: string): Promise<FacadeResolution | null> {
         const globalHelpers: Record<string, string> = {
             'abort': 'Illuminate\\Contracts\\Foundation\\Application',
             'abort_if': 'Illuminate\\Contracts\\Foundation\\Application',
@@ -37,6 +37,13 @@ export class GlobalHelperResolver implements IFacadeResolver {
             'view': 'Illuminate\\Contracts\\View\\Factory'
         };
 
-        return globalHelpers[helperName] || null;
+        const className = globalHelpers[helperName];
+        if (className) {
+            return {
+                className,
+                lifecycle: 'unknown'
+            };
+        }
+        return null;
     }
 }

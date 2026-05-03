@@ -2,6 +2,18 @@
 
 All notable changes to the "laravel-facade-resolver" extension will be documented in this file.
 
+## [1.2.0] - The Architectural Mentor Update
+- **Architectural Code Actions**: Introduced "Convert to Constructor Injection" quick action (Ctrl+.) to automate refactoring Facades to DI.
+- **SOLID Education Engine**: Integrated contextual SOLID tips in hovers, including SRP warnings for classes with too many dependencies.
+- **Architecture Health Report**: Added `Analyze Architecture Health` command to score your file's SOLID compliance.
+- **Deep Key Validation**: Implemented nested validation for `config()` keys and file-existence checks for `view()` helpers.
+- **Service Lifecycle Education**: Added visual indicators (🔒 Singleton / 🔄 Transient) to hovers based on service provider bindings.
+- **Docstring Proxying**: Tooltips now extract and display the original class-level documentation from the underlying Contract/Interface.
+- **Testing & Mocking Integration**: Added dedicated snippets in hovers for quick Mockery/Laravel test setup.
+- **Blade File Support**: Extended all resolution and validation features to `.blade.php` files.
+- **Custom Domain Support**: Added support for `.facade-resolver.json` to map custom or third-party services.
+- **Enhanced Code Lenses**: Added unobtrusive DI reminders above methods using Facades.
+
 ## [1.1.0]
 - Added ability to import facade classes by clicking on import in the tooltip
 - Added **Global Helper Resolution**: Resolves Laravel's global helper functions (e.g., `event()`, `__()`, `redirect()`) to their underlying Dependency Injection Contracts, resolving Larastan's `noGlobalLaravelFunction` strict rules.

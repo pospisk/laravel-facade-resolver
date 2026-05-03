@@ -1,4 +1,4 @@
-import { IFacadeResolver } from '../interfaces/IFacadeResolver.js';
+import { IFacadeResolver, FacadeResolution } from '../interfaces/IFacadeResolver.js';
 
 export class FacadeResolver implements IFacadeResolver {
     private resolvers: IFacadeResolver[];
@@ -7,7 +7,7 @@ export class FacadeResolver implements IFacadeResolver {
         this.resolvers = resolvers;
     }
 
-    public async resolve(accessor: string): Promise<string | null> {
+    public async resolve(accessor: string): Promise<FacadeResolution | null> {
         for (const resolver of this.resolvers) {
             const result = await resolver.resolve(accessor);
             if (result) {

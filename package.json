@@ -2,7 +2,7 @@
   "name": "laravel-facade-resolver",
   "displayName": "Laravel Facade Resolver",
   "description": "Quickly resolve Laravel Facades to their bound classes on hover. Designed to speed up PHPStan Level 10 development.",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "publisher": "pospisk",
   "icon": "icon.png",
   "repository": {
@@ -31,7 +31,15 @@
     "commands": [
       {
         "command": "laravelFacadeResolver.importClass",
-        "title": "Import Laravel Facade Class"
+        "title": "Laravel: Import Facade Class"
+      },
+      {
+        "command": "laravelFacadeResolver.analyzeHealth",
+        "title": "Laravel: Analyze Architecture Health (SOLID)"
+      },
+      {
+        "command": "laravelFacadeResolver.bulkConvertToDI",
+        "title": "Laravel: Refactor All Facades to Constructor Injection"
       }
     ],
     "configuration": {
@@ -41,6 +49,42 @@
           "type": "boolean",
           "default": true,
           "description": "Enable or disable the facade hover resolution."
+        },
+        "laravelFacadeResolver.education.showSrpWarnings": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show warnings when a class has too many dependencies (SRP violation)."
+        },
+        "laravelFacadeResolver.education.srpThreshold": {
+          "type": "number",
+          "default": 5,
+          "description": "The number of dependencies before triggering an SRP warning."
+        },
+        "laravelFacadeResolver.education.showSolidTips": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show educational SOLID principles tips in hovers."
+        },
+        "laravelFacadeResolver.education.density": {
+          "type": "string",
+          "enum": ["compact", "full"],
+          "default": "full",
+          "description": "Controls how much educational content appears in tooltips."
+        },
+        "laravelFacadeResolver.validation.enableConfig": {
+          "type": "boolean",
+          "default": true,
+          "description": "Validate config() keys against your /config files."
+        },
+        "laravelFacadeResolver.validation.enableRoutes": {
+          "type": "boolean",
+          "default": true,
+          "description": "Validate route() names."
+        },
+        "laravelFacadeResolver.validation.enableViews": {
+          "type": "boolean",
+          "default": true,
+          "description": "Validate view() names against Blade files."
         }
       }
     }
