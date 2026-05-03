@@ -57,9 +57,25 @@ export class CoreFacadeResolver implements IFacadeResolver {
     public async resolve(accessor: string): Promise<FacadeResolution | null> {
         const className = this.coreFacades[accessor];
         if (className) {
+            let advice: string | undefined;
+            if (accessor === 'auth' || accessor === 'auth.driver') {
+                advice = '🔒 **Isolation Tip**: Services shouldn\'t know about the "current user." Pass the `User` model as a method argument for better reusability.';
+            } else if (accessor === 'request') {
+                advice = '🛑 **Service Coupling**: Avoid injecting `Request` into Services. Pass a **DTO** or array instead.';
+            } else if (accessor === 'session' || accessor === 'session.store') {
+                advice = '⚠️ **Portability Warning**: Using `Session` in deep services makes them hard to reuse in **CLI commands** or **Queued Jobs**.';
+            } else if (accessor === 'db' || accessor === 'db.connection') {
+                advice = '🏛️ **Domain Logic**: If performing complex queries, consider a **Query Builder** or **Repository** class to keep your service focused on business rules.';
+            } else if (accessor === 'cache' || accessor === 'cache.store') {
+                advice = '🚀 **Performance Tip**: For heavy data, use the **Repository Decorator** pattern to handle caching transparently.';
+            } else if (accessor === 'filesystem' || accessor === 'filesystem.disk') {
+                advice = '📦 **Filesystem Inversion**: Inject `Filesystem` and pass the disk name as a config value instead of hardcoding `Storage::disk(\'s3\')`.';
+            }
+
             return {
                 className,
-                lifecycle: 'singleton' // Most core services are singletons
+                lifecycle: 'singleton',
+                advice
             };
         }
         return null;

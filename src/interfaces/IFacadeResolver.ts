@@ -4,6 +4,7 @@ export interface FacadeResolution {
     className: string;
     lifecycle?: 'singleton' | 'transient' | 'scoped' | 'unknown';
     sourceUri?: vscode.Uri;
+    advice?: string;
 }
 
 export interface IFacadeResolver {

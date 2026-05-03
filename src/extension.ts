@@ -3,6 +3,7 @@ import { FacadeHoverProvider } from './providers/FacadeHoverProvider.js';
 import { DefinitionFinder } from './utils/DefinitionFinder.js';
 import { CoreFacadeResolver } from './resolvers/CoreFacadeResolver.js';
 import { CustomFacadeResolver } from './resolvers/CustomFacadeResolver.js';
+import { GlobalHelperResolver } from './resolvers/GlobalHelperResolver.js';
 import { FacadeResolver } from './resolvers/FacadeResolver.js';
 import { FacadeCodeLensProvider } from './providers/FacadeCodeLensProvider.js';
 import { ArchitecturalCodeActionProvider } from './providers/ArchitecturalCodeActionProvider.js';
@@ -21,11 +22,13 @@ export function activate(context: vscode.ExtensionContext) {
     // Setup resolvers (Chain of Responsibility pattern)
     const coreResolver = new CoreFacadeResolver();
     const customResolver = new CustomFacadeResolver();
+    const globalHelperResolver = new GlobalHelperResolver();
     
     // Orchestrator
     const facadeResolver = new FacadeResolver([
         coreResolver,
-        customResolver
+        customResolver,
+        globalHelperResolver
     ]);
 
     const hoverProvider = new FacadeHoverProvider(definitionFinder, facadeResolver);
@@ -137,7 +140,14 @@ export function activate(context: vscode.ExtensionContext) {
         await DIFactor.generateTestMock(document, className);
     });
 
-    context.subscriptions.push(hoverDisposable, codeLensDisposable, codeActionDisposable, importCommand, convertToDICommand, goToBindingCommand, analyzeHealthCommand, bulkConvertToDICommand, copyMockCommand);
+    const toggleDensityCommand = vscode.commands.registerCommand('laravelFacadeResolver.toggleDensity', async () => {
+        const config = vscode.workspace.getConfiguration('laravelFacadeResolver');
+        const current = config.get<string>('education.density', 'full');
+        const next = current === 'full' ? 'compact' : 'full';
+        await config.update('education.density', next, vscode.ConfigurationTarget.Global);
+    });
+
+    context.subscriptions.push(hoverDisposable, codeLensDisposable, codeActionDisposable, importCommand, convertToDICommand, goToBindingCommand, analyzeHealthCommand, bulkConvertToDICommand, copyMockCommand, toggleDensityCommand);
 }
 
 export function deactivate() {}

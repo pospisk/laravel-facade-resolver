@@ -41,14 +41,29 @@ export class SolidEducationProvider {
         };
     }
 
-    public getIspAdvice(interfaceName: string): SolidAdvice | null {
+    public getIspAdvice(interfaceName: string, accessor?: string): SolidAdvice | null {
+        const shortName = interfaceName.split('\\').pop() || '';
+        
+        if (shortName === 'Application') {
+            if (accessor === 'abort' || accessor === 'abort_if') {
+                return {
+                    title: '📏 ISP/Flow Control Warning',
+                    content: `Injecting \`Application\` just for \`abort()\` is overkill. Consider returning a proper \`Response\` or throwing a custom exception that is handled by the \`ExceptionHandler\`.`,
+                    severity: 'warning'
+                };
+            }
+            return {
+                title: '📏 ISP Warning: Fat Interface',
+                content: `\`Application\` is a large interface. Suggest using more specific contracts like \`Config\`, \`Filesystem\`, or \`Dispatcher\`. Interface Segregation recommends using smaller, more specific contracts.`,
+                severity: 'warning'
+            };
+        }
+
         const fatInterfaces: Record<string, string> = {
-            'Application': 'Suggest using more specific contracts like `Config`, `Filesystem`, or `Dispatcher`.',
             'Request': 'Consider using specialized Request classes or narrow interfaces if you only need specific data.',
             'Container': 'Inject only what you need instead of the entire container.'
         };
 
-        const shortName = interfaceName.split('\\').pop() || '';
         if (fatInterfaces[shortName]) {
             return {
                 title: '📏 ISP Warning: Fat Interface',
