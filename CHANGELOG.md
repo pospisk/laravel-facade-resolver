@@ -5,6 +5,11 @@ All notable changes to the "laravel-facade-resolver" extension will be documente
 ## [1.2.0] - The Architectural Mentor Update
 - **Architectural Code Actions**: Introduced "Convert to Constructor Injection" quick action (Ctrl+.) to automate refactoring Facades to DI.
 - **SOLID Education Engine**: Integrated contextual SOLID tips in hovers, including SRP warnings for classes with too many dependencies.
+- **Architecture Mentorship Improvements**: 
+  - Suppressed generic/irrelevant OCP/LSP fluff when consuming standard core facades.
+  - Added severe anti-pattern warnings for `env()` (Environment Coupling) and `app()`/`resolve()` (Service Locator).
+  - Corrected testing snippets to mock framework `Contracts` (e.g., `Illuminate\\Contracts\\Cache\\Repository`) rather than concrete `Managers`.
+  - Added customized Dependency Inversion logic and specialized Mockery examples for `DB`, `Log`, and `Storage`.
 - **Architecture Health Report**: Added `Analyze Architecture Health` command to score your file's SOLID compliance.
 - **Deep Key Validation**: Implemented nested validation for `config()` keys and file-existence checks for `view()` helpers.
 - **Service Lifecycle Education**: Added visual indicators (🔒 Singleton / 🔄 Transient) to hovers based on service provider bindings.

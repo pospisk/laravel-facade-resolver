@@ -32,7 +32,7 @@ export class FacadeHoverProvider implements vscode.HoverProvider {
             const facadeName = facadeMatch[1];
             const resolution = await this.facadeResolver.resolve(facadeName);
             if (resolution) {
-                return this.createHover(facadeName, resolution.className, 'Facade', document, resolution);
+                return this.createHover(facadeName, resolution.className, 'Facade', document, position, resolution);
             }
         }
 
@@ -41,32 +41,45 @@ export class FacadeHoverProvider implements vscode.HoverProvider {
             const helperName = helperMatch[1];
             const resolution = await this.facadeResolver.resolve(helperName);
             if (resolution) {
-                return this.createHover(helperName, resolution.className, 'Global Helper', document, resolution);
+                return this.createHover(helperName, resolution.className, 'Global Helper', document, position, resolution);
             }
         }
 
         const resolution = await this.facadeResolver.resolve(word);
         if (resolution) {
-            return this.createHover(word, resolution.className, 'Laravel Service', document, resolution);
+            return this.createHover(word, resolution.className, 'Laravel Service', document, position, resolution);
         }
 
         return null;
     }
 
-    private extractClassDocblock(content: string, className: string): string | null {
-        const shortName = className.split('\\').pop() || '';
-        const regex = new RegExp(`\\/\\*\\*[\\s\\S]*?\\*\\/\\s*(?:final\\s+|abstract\\s+)?class\\s+${shortName}`, 'm');
-        const match = content.match(regex);
-        if (match) {
-            const lines = match[0].split('\n')
-                .map(line => line.trim().replace(/^\/\*\*|^\*\/|^\*/, '').trim())
-                .filter(line => line.length > 0 && !line.startsWith('@'));
-            return lines.join(' ');
+    private async extractDocblockAt(uri: vscode.Uri, range: vscode.Range): Promise<string | null> {
+        try {
+            const contentBytes = await vscode.workspace.fs.readFile(uri);
+            const content = Buffer.from(contentBytes).toString('utf-8');
+            const lines = content.split('\n');
+            const startLine = range.start.line;
+            
+            let docLines: string[] = [];
+            let inDoc = false;
+            
+            for (let i = startLine - 1; i >= 0; i--) {
+                const line = lines[i].trim();
+                if (line.endsWith('*/')) inDoc = true;
+                if (inDoc) {
+                    docLines.unshift(line.replace(/^\/\*\*|^\*\/|^\*/, '').trim());
+                }
+                if (line.startsWith('/**')) break;
+                if (!inDoc && line.length > 0 && !line.startsWith('[') && !line.startsWith('@')) break; 
+            }
+            
+            return docLines.filter(l => l.length > 0 && !l.startsWith('@')).join(' ');
+        } catch (e) {
+            return null;
         }
-        return null;
     }
 
-    private async createHover(facadeName: string, resolvedClass: string, prefix: string, document: vscode.TextDocument, resolution: FacadeResolution): Promise<vscode.Hover> {
+    private async createHover(facadeName: string, resolvedClass: string, prefix: string, document: vscode.TextDocument, position: vscode.Position, resolution: FacadeResolution): Promise<vscode.Hover> {
         if (resolvedClass.startsWith('\\')) {
             resolvedClass = resolvedClass.substring(1);
         }
@@ -81,29 +94,23 @@ export class FacadeHoverProvider implements vscode.HoverProvider {
         const importUri = vscode.Uri.parse(`command:laravelFacadeResolver.importClass?${encodeURIComponent(JSON.stringify([resolvedClass]))}`);
         const bindingUri = vscode.Uri.parse(`command:laravelFacadeResolver.goToBinding?${encodeURIComponent(JSON.stringify([facadeName]))}`);
         
-        // 1. TOP PRIORITY: Documentation Header & Definition
-        md.appendMarkdown(`🏗️ **${prefix}:** \`${resolvedClass}\`\n\n`);
-
-        const classUri = await this.definitionFinder.findClassUri(resolvedClass);
-        if (classUri) {
-            try {
-                const classContentBytes = await vscode.workspace.fs.readFile(classUri);
-                const classContent = Buffer.from(classContentBytes).toString('utf-8');
-                const docblock = this.extractClassDocblock(classContent, resolvedClass);
-                if (docblock) {
-                    md.appendMarkdown(`> ${docblock}\n\n`);
-                }
-            } catch (e) {}
+        // 1. AT THE VERY TOP: Proxied Definition (The "What")
+        const definition = await this.definitionFinder.findDefinitionEx(document, position);
+        if (definition) {
+            const docblock = await this.extractDocblockAt(definition.uri, definition.range);
+            if (docblock) {
+                md.appendMarkdown(`**${facadeName}**\n\n> ${docblock}\n\n`);
+                md.appendMarkdown(`---\n\n`);
+            }
         }
 
-        md.appendMarkdown(`---\n\n`);
+        // 2. MIDDLE: Architectural Messages (The "Why")
+        md.appendMarkdown(`🏗️ **${prefix}:** \`${resolvedClass}\`\n\n`);
 
-        // 2. MIDDLE: Contextual Advice
         if (resolution.advice) {
             md.appendMarkdown(`💡 **Tip:** ${resolution.advice}\n\n`);
         }
 
-        // 3. BOTTOM: Architectural Mentorship
         if (showSolid) {
             md.appendMarkdown(`### 🏗️ **Architectural Mentorship**\n\n`);
 
@@ -112,22 +119,29 @@ export class FacadeHoverProvider implements vscode.HoverProvider {
                 md.appendMarkdown(`#### ${srpAdvice.title}\n${srpAdvice.content}\n\n`);
             }
 
-            const dipAdvice = this.educationProvider.getDipAdvice(facadeName, resolvedClass);
-            md.appendMarkdown(`#### ${dipAdvice.title}\n${dipAdvice.content}\n\n`);
+            const dipAdvice = this.educationProvider.getDipAdvice(facadeName, resolvedClass, prefix);
+            if (dipAdvice) {
+                md.appendMarkdown(`#### ${dipAdvice.title}\n${dipAdvice.content}\n\n`);
+            }
 
             const ispAdvice = this.educationProvider.getIspAdvice(resolvedClass, facadeName);
             if (ispAdvice) {
                 md.appendMarkdown(`#### ${ispAdvice.title}\n${ispAdvice.content}\n\n`);
             }
 
-            const lspAdvice = this.educationProvider.getLspOcpAdvice(facadeName);
-            md.appendMarkdown(`#### ${lspAdvice.title}\n${lspAdvice.content}\n\n`);
+            const lspAdvice = this.educationProvider.getLspOcpAdvice(facadeName, prefix);
+            if (lspAdvice) {
+                md.appendMarkdown(`#### ${lspAdvice.title}\n${lspAdvice.content}\n\n`);
+            }
             
-            md.appendMarkdown(`#### 🧪 Testing & Mocking\n`);
-            md.appendCodeblock(`$this->instance(${resolvedClass}::class, Mockery::mock(${resolvedClass}::class));`, 'php');
+            const testingAdvice = this.educationProvider.getTestingAdvice(facadeName, resolvedClass);
+            if (testingAdvice) {
+                md.appendMarkdown(`#### 🧪 Testing & Mocking\n`);
+                md.appendCodeblock(testingAdvice, 'php');
+            }
         }
 
-        // 4. FOOTER: Actions & Links
+        // 3. FOOTER: Actions
         md.appendMarkdown(`---\n\n`);
         if (resolution.lifecycle && resolution.lifecycle !== 'unknown') {
             const lifecycleIcon = resolution.lifecycle === 'singleton' ? '🔒' : '🔄';
