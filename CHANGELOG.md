@@ -2,6 +2,12 @@
 
 All notable changes to the "laravel-facade-resolver" extension will be documented in this file.
 
+## [1.2.1]
+- **Bug Fixes**:
+  - Fixed a critical bug where capitalized facades (e.g., `Log`, `DB`, `Storage`) were failing to trigger tooltips; core facades are now resolved case-insensitively.
+  - Fixed `abort()` helpers incorrectly resolving to the `Application` container; they now properly resolve to `Symfony\\Component\\HttpKernel\\Exception\\HttpException`.
+  - Removed contradictory Dependency Inversion advice for `abort()` helpers that incorrectly suggested injecting the entire `Application` container (Service Locator anti-pattern).
+
 ## [1.2.0] - The Architectural Mentor Update
 - **Architectural Code Actions**: Introduced "Convert to Constructor Injection" quick action (Ctrl+.) to automate refactoring Facades to DI.
 - **SOLID Education Engine**: Integrated contextual SOLID tips in hovers, including SRP warnings for classes with too many dependencies.

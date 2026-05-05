@@ -5,11 +5,11 @@ export class GlobalHelperResolver implements IFacadeResolver {
     public async resolve(helperName: string): Promise<FacadeResolution | null> {
         const globalHelpers: Record<string, { className: string, advice?: string }> = {
             'abort': { 
-                className: 'Illuminate\\Contracts\\Foundation\\Application',
+                className: 'Symfony\\Component\\HttpKernel\\Exception\\HttpException',
                 advice: 'Instead of aborting mid-execution, consider returning a `JsonResponse` or `RedirectResponse`. This keeps your method\'s return type predictable and makes testing easier.'
             },
-            'abort_if': { className: 'Illuminate\\Contracts\\Foundation\\Application' },
-            'abort_unless': { className: 'Illuminate\\Contracts\\Foundation\\Application' },
+            'abort_if': { className: 'Symfony\\Component\\HttpKernel\\Exception\\HttpException' },
+            'abort_unless': { className: 'Symfony\\Component\\HttpKernel\\Exception\\HttpException' },
             'app': { className: 'Illuminate\\Contracts\\Foundation\\Application' },
             'auth': { 
                 className: 'Illuminate\\Contracts\\Auth\\Guard',
