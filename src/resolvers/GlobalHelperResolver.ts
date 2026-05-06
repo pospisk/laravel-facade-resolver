@@ -13,24 +13,40 @@ export class GlobalHelperResolver implements IFacadeResolver {
             'app': { className: 'Illuminate\\Contracts\\Foundation\\Application' },
             'auth': { 
                 className: 'Illuminate\\Contracts\\Auth\\Guard',
-                advice: '🔒 **Isolation Tip**: Services shouldn\'t know about the "current user." Pass the `User` model as a method argument for better reusability and testability.'
+                advice: '🏗️ **Architectural Mentorship**\n🏗️ **Dependency Inversion Tip**\nInstead of `auth()`, inject `Illuminate\\Contracts\\Auth\\Guard`. Better yet, pass the `User` object directly to your service methods to avoid hidden dependencies on the global session state.\n\n🧪 **Testing & Mocking**\n```php\n$this->actingAs($user);\n```\n\n💡 **Import Recommendation**\n`use Illuminate\\Contracts\\Auth\\Guard;`'
             },
             'back': { className: 'Illuminate\\Routing\\Redirector' },
             'bcrypt': { className: 'Illuminate\\Contracts\\Hashing\\Hasher' },
             'broadcast': { className: 'Illuminate\\Contracts\\Broadcasting\\Factory' },
-            'cache': { className: 'Illuminate\\Contracts\\Cache\\Repository' },
+            'cache': { 
+                className: 'Illuminate\\Contracts\\Cache\\Repository',
+                advice: '🏗️ **Architectural Mentorship**\n🏗️ **Dependency Inversion Tip**\nInject `Illuminate\\Contracts\\Cache\\Factory` if you need to access multiple stores, or `Illuminate\\Contracts\\Cache\\Repository` for the default store. This avoids coupling your logic to the global Cache state.\n\n🧪 **Testing & Mocking**\n```php\nCache::shouldReceive(\'get\')->with(\'key\')->andReturn(\'value\');\n```\n\n💡 **Import Recommendation**\n`use Illuminate\\Contracts\\Cache\\Repository;`'
+            },
             'config': { 
-                className: 'Illuminate\\Contracts\\Config\\Repository',
-                advice: '⚙️ **Tip**: For high-volume config access, consider a dedicated `Settings` class to keep your service signatures clean.'
+                className: 'Illuminate\\Config\\Repository',
+                advice: '🏗️ **Architectural Mentorship**\n🏗️ **Dependency Inversion Tip**\nInstead of using the `config` global helper, consider injecting `Illuminate\\Contracts\\Config\\Repository` into your constructor. This makes your class easier to test and decouples it from the global state.\n\n🧪 **Testing & Mocking**\n```php\n$this->instance(Repository::class, Mockery::mock(Repository::class));\n```\n\n💡 **Import Recommendation**\n`use Illuminate\\Contracts\\Config\\Repository;`'
+            },
+            'storage': {
+                className: 'Illuminate\\Filesystem\\FilesystemManager',
+                advice: '🏗️ **Architectural Mentorship**\n🏗️ **Dependency Inversion Tip**\nInject `Illuminate\\Contracts\\Filesystem\\Factory` if you need to select disks dynamically, or `Illuminate\\Contracts\\Filesystem\\Filesystem` if you bind a specific disk via a service provider context.\n\n🧩 **ISP Tip**\nThe `Filesystem` contract ensures your service only knows about file operations (read/write/delete) without caring if the backend is local, S3, or a custom adapter.\n\n🧪 **Testing & Mocking**\n```php\n$disk = Mockery::mock(Filesystem::class);\n$disk->shouldReceive(\'delete\')->with($oldPath)->once();\n```\n\n💡 **Import Recommendation**\n`use Illuminate\\Contracts\\Filesystem\\Factory;`'
             },
             'cookie': { className: 'Illuminate\\Contracts\\Cookie\\Factory' },
             'decrypt': { className: 'Illuminate\\Contracts\\Encryption\\Encrypter' },
             'dispatch': { className: 'Illuminate\\Contracts\\Bus\\Dispatcher' },
             'dispatch_sync': { className: 'Illuminate\\Contracts\\Bus\\Dispatcher' },
             'encrypt': { className: 'Illuminate\\Contracts\\Encryption\\Encrypter' },
-            'event': { className: 'Illuminate\\Contracts\\Events\\Dispatcher' },
-            'info': { className: 'Psr\\Log\\LoggerInterface' },
-            'logger': { className: 'Psr\\Log\\LoggerInterface' },
+            'event': { 
+                className: 'Illuminate\\Contracts\\Events\\Dispatcher',
+                advice: '🏗️ **Architectural Mentorship**\n🏗️ **Dependency Inversion Tip**\nInject `Illuminate\\Contracts\\Events\\Dispatcher` to fire events. This makes it easier to mock events in unit tests without actually triggering listeners.\n\n🧪 **Testing & Mocking**\n```php\nEvent::fake();\n```\n\n💡 **Import Recommendation**\n`use Illuminate\\Contracts\\Events\\Dispatcher;`'
+            },
+            'info': { 
+                className: 'Psr\\Log\\LoggerInterface',
+                advice: '🏗️ **Architectural Mentorship**\n🏗️ **Dependency Inversion Tip**\nInject `Psr\\Log\\LoggerInterface` instead of using the `Log` facade or `logger()` helper. This follows the PSR-3 standard, making your code compatible with any PSR-compliant logger.\n\n🧪 **Testing & Mocking**\n```php\nLog::shouldReceive(\'info\')->once();\n```\n\n💡 **Import Recommendation**\n`use Psr\\Log\\LoggerInterface;`'
+            },
+            'logger': { 
+                className: 'Psr\\Log\\LoggerInterface',
+                advice: '🏗️ **Architectural Mentorship**\n🏗️ **Dependency Inversion Tip**\nInject `Psr\\Log\\LoggerInterface` instead of using the `Log` facade or `logger()` helper. This follows the PSR-3 standard, making your code compatible with any PSR-compliant logger.\n\n🧪 **Testing & Mocking**\n```php\nLog::shouldReceive(\'info\')->once();\n```\n\n💡 **Import Recommendation**\n`use Psr\\Log\\LoggerInterface;`'
+            },
             'now': { className: 'Illuminate\\Support\\Carbon' },
             'redirect': { className: 'Illuminate\\Routing\\Redirector' },
             'request': { 
@@ -41,7 +57,7 @@ export class GlobalHelperResolver implements IFacadeResolver {
             'route': { className: 'Illuminate\\Contracts\\Routing\\UrlGenerator' },
             'session': { 
                 className: 'Illuminate\\Contracts\\Session\\Session',
-                advice: '⚠️ **Portability Warning**: Using `Session` in deep services makes them hard to reuse in **CLI commands** or **Queued Jobs**.'
+                advice: '🏗️ **Architectural Mentorship**\n🏗️ **Dependency Inversion Tip**\nInject `Illuminate\\Contracts\\Session\\Session` if you must interact with session state. Be aware that using sessions in services makes them harder to reuse in **CLI commands** or **Queued Jobs**.\n\n🧪 **Testing & Mocking**\n```php\nsession()->put(\'key\', \'value\');\n```\n\n💡 **Import Recommendation**\n`use Illuminate\\Contracts\\Session\\Session;`'
             },
             'today': { className: 'Illuminate\\Support\\Carbon' },
             'trans': { className: 'Illuminate\\Contracts\\Translation\\Translator' },
@@ -50,9 +66,12 @@ export class GlobalHelperResolver implements IFacadeResolver {
             'url': { className: 'Illuminate\\Contracts\\Routing\\UrlGenerator' },
             'validator': { 
                 className: 'Illuminate\\Contracts\\Validation\\Factory',
-                advice: '📋 **Form Request Tip**: For complex validation, consider using a **Form Request** class. It moves validation logic out of the controller and makes it reusable.'
+                advice: '🏗️ **Architectural Mentorship**\n🏗️ **Dependency Inversion Tip**\nInject `Illuminate\\Contracts\\Validation\\Factory` to create validators manually. However, for HTTP requests, it is cleaner to use **Form Request** classes which encapsulate validation logic.\n\n🧪 **Testing & Mocking**\n```php\nValidator::shouldReceive(\'make\')->once();\n```\n\n💡 **Import Recommendation**\n`use Illuminate\\Contracts\\Validation\\Factory;`'
             },
-            'view': { className: 'Illuminate\\Contracts\\View\\Factory' }
+            'view': { 
+                className: 'Illuminate\\Contracts\\View\\Factory',
+                advice: '🏗️ **Architectural Mentorship**\n🏗️ **Dependency Inversion Tip**\nInject `Illuminate\\Contracts\\View\\Factory` if your service needs to render templates (e.g., for email generation). This decouples your logic from the global view state.\n\n🧪 **Testing & Mocking**\n```php\nView::shouldReceive(\'make\')->with(\'emails.welcome\')->once();\n```\n\n💡 **Import Recommendation**\n`use Illuminate\\Contracts\\View\\Factory;`'
+            }
         };
 
         const resolution = globalHelpers[helperName];

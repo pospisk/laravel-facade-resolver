@@ -2,6 +2,15 @@
 
 All notable changes to the "laravel-facade-resolver" extension will be documented in this file.
 
+## [1.2.2]
+- **Architecture Mentorship Expansion**:
+  - Significantly enhanced architectural mentorship for `config()` and `storage()` helpers/facades with detailed DIP (Dependency Inversion Principle) and ISP (Interface Segregation Principle) guidance.
+  - Added specialized testing snippets and Mockery examples for `config()` and `storage()` to promote better unit testing patterns.
+  - Expanded mentorship coverage to include `auth`, `cache`, `log`, `event`, `session`, `validator`, and `view` with context-aware Dependency Inversion tips.
+  - Recommended specific Contract imports for all core services to align with Larastan Level 10 and strict SOLID architectures.
+- **Global Helper Support**:
+  - Added `storage()` global helper resolution to `Illuminate\Filesystem\FilesystemManager`.
+
 ## [1.2.1]
 - **Bug Fixes**:
   - Fixed a critical bug where capitalized facades (e.g., `Log`, `DB`, `Storage`) were failing to trigger tooltips; core facades are now resolved case-insensitively.
