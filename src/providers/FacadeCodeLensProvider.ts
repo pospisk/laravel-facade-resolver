@@ -1,7 +1,10 @@
 import * as vscode from 'vscode';
+import { FacadeResolver } from '../resolvers/FacadeResolver.js';
 
 export class FacadeCodeLensProvider implements vscode.CodeLensProvider {
-    public provideCodeLenses(document: vscode.TextDocument, token: vscode.CancellationToken): vscode.CodeLens[] {
+    constructor(private facadeResolver: FacadeResolver) {}
+
+    public async provideCodeLenses(document: vscode.TextDocument, token: vscode.CancellationToken): Promise<vscode.CodeLens[]> {
         const lenses: vscode.CodeLens[] = [];
         const text = document.getText();
         
@@ -16,16 +19,31 @@ export class FacadeCodeLensProvider implements vscode.CodeLensProvider {
             const methodBody = text.substring(match.index, methodEndIndex);
 
             // Check if facades are used inside the method body
-            // Simple check for ClassName::methodName()
+            // Match ClassName::methodName(
             const facadeUsageRegex = /\b([A-Z][a-zA-Z0-9]+)::[a-z]\w*\(/g;
-            if (facadeUsageRegex.test(methodBody)) {
-                const range = new vscode.Range(methodStartPos, methodStartPos);
-                const codeLens = new vscode.CodeLens(range, {
-                    title: "🏗️ Facade used – Consider DI for Larastan L10 compatibility",
-                    command: "",
-                    tooltip: "Using facades makes your code harder to test. Consider injecting the contract into the constructor or method."
-                });
-                lenses.push(codeLens);
+            let facadeMatch;
+            
+            // Collect all unique class names in the method body to check
+            const potentialFacades = new Set<string>();
+            while ((facadeMatch = facadeUsageRegex.exec(methodBody)) !== null) {
+                potentialFacades.add(facadeMatch[1]);
+            }
+
+            for (const facadeName of potentialFacades) {
+                const resolution = await this.facadeResolver.resolve(facadeName);
+                
+                // Only add code lens if it actually resolves to a facade/helper
+                if (resolution) {
+                    const range = new vscode.Range(methodStartPos, methodStartPos);
+                    const codeLens = new vscode.CodeLens(range, {
+                        title: "🏗️ Facade used – Consider DI for Larastan L10 compatibility",
+                        command: "",
+                        tooltip: `Using ${facadeName} makes your code harder to test. Consider injecting its contract instead.`
+                    });
+                    lenses.push(codeLens);
+                    // One lens per method is enough for the generic warning
+                    break;
+                }
             }
         }
 

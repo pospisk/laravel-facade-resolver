@@ -36,14 +36,14 @@ export class SolidEducationProvider {
     public getDipAdvice(facadeName: string, contractFqcn: string, prefix: string): SolidAdvice | null {
         const lowerFacade = facadeName.toLowerCase();
 
-        if (['abort', 'abort_if', 'abort_unless'].includes(lowerFacade)) {
+        if (['abort', 'abort_if', 'abort_unless', 'app_path', 'base_path', 'config_path', 'database_path', 'public_path', 'resource_path', 'storage_path'].includes(lowerFacade)) {
             return null;
         }
 
         if (lowerFacade === 'db') {
             return {
                 title: '🏗️ Dependency Inversion Tip',
-                content: `Relying on the \`${facadeName}\` ${prefix.toLowerCase()} hides your database dependencies. Inject \`Illuminate\\Database\\DatabaseManager\` (to resolve connections dynamically) or \`Illuminate\\Database\\ConnectionInterface\` (for direct queries and transactions) into your constructor.`,
+                content: `Relying on the \`${facadeName}\` ${prefix.toLowerCase()} hides your database dependencies. Inject \`Illuminate\\Database\\ConnectionInterface\` instead of \`Builder\`. The connection acts as a **Factory** for isolated builders, ensures **Transactional Integrity**, and is fully understood by PHPStan Level 10.`,
                 severity: 'info'
             };
         }
@@ -122,7 +122,7 @@ export class SolidEducationProvider {
             };
         }
 
-        if (lowerAccessor === 'storage') {
+        if (['storage', 'file', 'files'].includes(lowerAccessor)) {
             return {
                 title: '🧩 ISP Tip',
                 content: `The \`Filesystem\` contract ensures your service only knows about file operations (read/write/delete) without caring if the backend is local, S3, or a custom adapter.`,
@@ -192,7 +192,7 @@ export class SolidEducationProvider {
     public getTestingAdvice(accessor: string, resolvedClass: string): string | null {
         const lowerAccessor = accessor.toLowerCase();
 
-        if (['abort', 'abort_if', 'abort_unless', 'env', 'app', 'resolve'].includes(lowerAccessor)) {
+        if (['abort', 'abort_if', 'abort_unless', 'env', 'app', 'resolve', 'app_path', 'base_path', 'config_path', 'database_path', 'public_path', 'resource_path', 'storage_path'].includes(lowerAccessor)) {
             return null;
         }
 
@@ -204,7 +204,7 @@ export class SolidEducationProvider {
             return `$logger = Mockery::mock(Psr\\Log\\LoggerInterface::class);\n$logger->shouldReceive('info')->with('Created fallback personal workspace...')->once();`;
         }
 
-        if (lowerAccessor === 'storage') {
+        if (['storage', 'file', 'files'].includes(lowerAccessor)) {
             return `$disk = Mockery::mock(Illuminate\\Contracts\\Filesystem\\Filesystem::class);\n$disk->shouldReceive('delete')->with($oldPath)->once();`;
         }
 

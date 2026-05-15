@@ -2,6 +2,24 @@
 
 All notable changes to the "laravel-facade-resolver" extension will be documented in this file.
 
+## [1.2.3]
+- **Architectural Refinement**:
+  - Enforced "Contract-First" resolution: All core Laravel facades and helpers now resolve directly to their underlying **Contracts** (Interfaces) rather than concrete Manager classes.
+  - This ensures that hover information, "Go to Definition," and auto-imports prioritize Dependency Inversion and SOLID principles by default.
+  - Specifically, `auth()` and `Auth::` now resolve and import `Illuminate\Contracts\Auth\Guard`.
+  - **Database Alignment**: Realigned the `DB` facade to resolve to `Illuminate\Database\ConnectionInterface` (instead of `Builder`) to promote correct state management and transactional integrity.
+- **Context-Aware Method Analysis**:
+  - The extension now analyzes the specific method being called on a facade to provide targeted architectural advice.
+  - Added specialized deep-dives for `DB::transaction()` (emphasizing transaction orchestration) and `DB::table()` (explaining builder factory isolation).
+  - **Stateful Auth Detection**: Hovering over stateful methods like `logout()`, `login()`, or `attempt()` on `Auth::` or `auth()` now intelligently suggests and imports `Illuminate\Contracts\Auth\StatefulGuard` instead of the generic `Guard`.
+  - **Manual Event Faking**: Added specialized architectural advice for `Event::fake()`, suggesting a SOLID manual faking approach that uses `EventFake` and the `Dispatcher` contract for cleaner dependency injection in tests.
+- **New Helpers & Facades**:
+  - Added support for the `Event` facade (mapping to the `events` dispatcher contract).
+  - Added support for the `Password` facade, resolving to `Illuminate\Contracts\Auth\PasswordBroker`.
+  - Added support for global path helpers (`app_path`, `base_path`, etc.) with custom architectural advice.
+  - Added support for the `File` facade, resolving to `Illuminate\Contracts\Filesystem\Filesystem`.
+  - Added support for the `Validator` facade, resolving to `Illuminate\Contracts\Validation\Factory`.
+
 ## [1.2.2]
 - **Architecture Mentorship Expansion**:
   - Significantly enhanced architectural mentorship for `config()` and `storage()` helpers/facades with detailed DIP (Dependency Inversion Principle) and ISP (Interface Segregation Principle) guidance.

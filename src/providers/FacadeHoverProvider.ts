@@ -27,12 +27,23 @@ export class FacadeHoverProvider implements vscode.HoverProvider {
         const word = document.getText(range);
         const lineText = document.lineAt(position.line).text;
 
-        const facadeMatch = lineText.match(new RegExp(`(\\w+)::${word}`));
+        const facadeMatch = lineText.match(new RegExp(`(\\w+)::(${word})`));
         if (facadeMatch) {
             const facadeName = facadeMatch[1];
-            const resolution = await this.facadeResolver.resolve(facadeName);
+            const method = facadeMatch[2];
+            const resolution = await this.facadeResolver.resolve(facadeName, method);
             if (resolution) {
                 return this.createHover(facadeName, resolution.className, 'Facade', document, position, resolution);
+            }
+        }
+
+        const fluentMatch = lineText.match(new RegExp(`(\\w+)::(\\w+)\\(.*?\\)->(${word})`));
+        if (fluentMatch) {
+            const facadeName = fluentMatch[1];
+            const method = fluentMatch[3];
+            const resolution = await this.facadeResolver.resolve(facadeName, method);
+            if (resolution) {
+                return this.createHover(facadeName, resolution.className, 'Facade (Fluent)', document, position, resolution);
             }
         }
 
@@ -42,6 +53,16 @@ export class FacadeHoverProvider implements vscode.HoverProvider {
             const resolution = await this.facadeResolver.resolve(helperName);
             if (resolution) {
                 return this.createHover(helperName, resolution.className, 'Global Helper', document, position, resolution);
+            }
+        }
+
+        const helperFluentMatch = lineText.match(new RegExp(`(\\w+)\\s*\\(.*?\\)->(${word})`));
+        if (helperFluentMatch) {
+            const helperName = helperFluentMatch[1];
+            const method = helperFluentMatch[2];
+            const resolution = await this.facadeResolver.resolve(helperName, method);
+            if (resolution) {
+                return this.createHover(helperName, resolution.className, 'Global Helper (Fluent)', document, position, resolution);
             }
         }
 

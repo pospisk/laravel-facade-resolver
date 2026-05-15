@@ -2,7 +2,7 @@
   "name": "laravel-facade-resolver",
   "displayName": "Laravel Facade Resolver",
   "description": "Quickly resolve Laravel Facades to their bound classes on hover. Designed to speed up PHPStan Level 10 development.",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "publisher": "pospisk",
   "icon": "icon.png",
   "repository": {

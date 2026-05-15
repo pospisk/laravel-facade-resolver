@@ -2,7 +2,7 @@ import { IFacadeResolver, FacadeResolution } from '../interfaces/IFacadeResolver
 
 export class GlobalHelperResolver implements IFacadeResolver {
     
-    public async resolve(helperName: string): Promise<FacadeResolution | null> {
+    public async resolve(helperName: string, method?: string): Promise<FacadeResolution | null> {
         const globalHelpers: Record<string, { className: string, advice?: string }> = {
             'abort': { 
                 className: 'Symfony\\Component\\HttpKernel\\Exception\\HttpException',
@@ -11,6 +11,34 @@ export class GlobalHelperResolver implements IFacadeResolver {
             'abort_if': { className: 'Symfony\\Component\\HttpKernel\\Exception\\HttpException' },
             'abort_unless': { className: 'Symfony\\Component\\HttpKernel\\Exception\\HttpException' },
             'app': { className: 'Illuminate\\Contracts\\Foundation\\Application' },
+            'app_path': { 
+                className: 'Illuminate\\Contracts\\Foundation\\Application',
+                advice: '🏗️ **Architectural Mentorship**\n🏗️ **Dependency Inversion Tip**\nAvoid using global path helpers in domain services. Pass the resolved path via configuration or constructor parameters to decouple your service from the framework\'s directory structure.'
+            },
+            'base_path': { 
+                className: 'Illuminate\\Contracts\\Foundation\\Application',
+                advice: '🏗️ **Architectural Mentorship**\n🏗️ **Dependency Inversion Tip**\nAvoid using global path helpers in domain services. Pass the resolved path via configuration or constructor parameters to decouple your service from the framework\'s directory structure.'
+            },
+            'config_path': { 
+                className: 'Illuminate\\Contracts\\Foundation\\Application',
+                advice: '🏗️ **Architectural Mentorship**\n🏗️ **Dependency Inversion Tip**\nAvoid using global path helpers in domain services. Pass the resolved path via configuration or constructor parameters to decouple your service from the framework\'s directory structure.'
+            },
+            'database_path': { 
+                className: 'Illuminate\\Contracts\\Foundation\\Application',
+                advice: '🏗️ **Architectural Mentorship**\n🏗️ **Dependency Inversion Tip**\nAvoid using global path helpers in domain services. Pass the resolved path via configuration or constructor parameters to decouple your service from the framework\'s directory structure.'
+            },
+            'public_path': { 
+                className: 'Illuminate\\Contracts\\Foundation\\Application',
+                advice: '🏗️ **Architectural Mentorship**\n🏗️ **Dependency Inversion Tip**\nAvoid using global path helpers in domain services. Pass the resolved path via configuration or constructor parameters to decouple your service from the framework\'s directory structure.'
+            },
+            'resource_path': { 
+                className: 'Illuminate\\Contracts\\Foundation\\Application',
+                advice: '🏗️ **Architectural Mentorship**\n🏗️ **Dependency Inversion Tip**\nAvoid using global path helpers in domain services. Pass the resolved path via configuration or constructor parameters to decouple your service from the framework\'s directory structure.'
+            },
+            'storage_path': { 
+                className: 'Illuminate\\Contracts\\Foundation\\Application',
+                advice: '🏗️ **Architectural Mentorship**\n🏗️ **Dependency Inversion Tip**\nAvoid using global path helpers in domain services. Pass the resolved path via configuration or constructor parameters to decouple your service from the framework\'s directory structure.'
+            },
             'auth': { 
                 className: 'Illuminate\\Contracts\\Auth\\Guard',
                 advice: '🏗️ **Architectural Mentorship**\n🏗️ **Dependency Inversion Tip**\nInstead of `auth()`, inject `Illuminate\\Contracts\\Auth\\Guard`. Better yet, pass the `User` object directly to your service methods to avoid hidden dependencies on the global session state.\n\n🧪 **Testing & Mocking**\n```php\n$this->actingAs($user);\n```\n\n💡 **Import Recommendation**\n`use Illuminate\\Contracts\\Auth\\Guard;`'
@@ -23,11 +51,11 @@ export class GlobalHelperResolver implements IFacadeResolver {
                 advice: '🏗️ **Architectural Mentorship**\n🏗️ **Dependency Inversion Tip**\nInject `Illuminate\\Contracts\\Cache\\Factory` if you need to access multiple stores, or `Illuminate\\Contracts\\Cache\\Repository` for the default store. This avoids coupling your logic to the global Cache state.\n\n🧪 **Testing & Mocking**\n```php\nCache::shouldReceive(\'get\')->with(\'key\')->andReturn(\'value\');\n```\n\n💡 **Import Recommendation**\n`use Illuminate\\Contracts\\Cache\\Repository;`'
             },
             'config': { 
-                className: 'Illuminate\\Config\\Repository',
+                className: 'Illuminate\\Contracts\\Config\\Repository',
                 advice: '🏗️ **Architectural Mentorship**\n🏗️ **Dependency Inversion Tip**\nInstead of using the `config` global helper, consider injecting `Illuminate\\Contracts\\Config\\Repository` into your constructor. This makes your class easier to test and decouples it from the global state.\n\n🧪 **Testing & Mocking**\n```php\n$this->instance(Repository::class, Mockery::mock(Repository::class));\n```\n\n💡 **Import Recommendation**\n`use Illuminate\\Contracts\\Config\\Repository;`'
             },
             'storage': {
-                className: 'Illuminate\\Filesystem\\FilesystemManager',
+                className: 'Illuminate\\Contracts\\Filesystem\\Factory',
                 advice: '🏗️ **Architectural Mentorship**\n🏗️ **Dependency Inversion Tip**\nInject `Illuminate\\Contracts\\Filesystem\\Factory` if you need to select disks dynamically, or `Illuminate\\Contracts\\Filesystem\\Filesystem` if you bind a specific disk via a service provider context.\n\n🧩 **ISP Tip**\nThe `Filesystem` contract ensures your service only knows about file operations (read/write/delete) without caring if the backend is local, S3, or a custom adapter.\n\n🧪 **Testing & Mocking**\n```php\n$disk = Mockery::mock(Filesystem::class);\n$disk->shouldReceive(\'delete\')->with($oldPath)->once();\n```\n\n💡 **Import Recommendation**\n`use Illuminate\\Contracts\\Filesystem\\Factory;`'
             },
             'cookie': { className: 'Illuminate\\Contracts\\Cookie\\Factory' },

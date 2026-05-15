@@ -1,6 +1,6 @@
 # Laravel Facade Resolver
 
-[![Marketplace](https://img.shields.io/badge/Marketplace-v1.0.0-007ACC?logo=visual-studio-code&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=pospisk.laravel-facade-resolver)
+[![Marketplace](https://img.shields.io/badge/Marketplace-v1.2.3-007ACC?logo=visual-studio-code&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=pospisk.laravel-facade-resolver)
 [![PHP Version](https://img.shields.io/badge/PHP-%3E%3D%208.3-8892BF?logo=php)](https://packagist.org/packages/laravel/framework)
 
 Speed up your Laravel & Larastan (PHPStan Level 10) development workflow!
@@ -40,6 +40,15 @@ This extension contributes the following settings:
 - Custom facade resolution performs a basic regex search on `app/Providers`. It might not perfectly resolve highly dynamic bindings or bindings located in vendor packages.
 
 ## [Release Notes](./CHANGELOG.md)
+
+### 1.2.3
+- **Architectural Refinement**:
+  - Enforced **Contract-First** resolution: All core facades and helpers now resolve to their underlying Contracts (Interfaces).
+  - Prioritizes Dependency Inversion and SOLID principles for hovers, definitions, and auto-imports.
+  - Specifically, `auth()` and `Auth::` resolve to `Illuminate\Contracts\Auth\Guard`.
+  - **Database Alignment**: Realigned `DB::` to `Illuminate\Database\ConnectionInterface` for better state management and transactional integrity.
+- **Context-Aware Method Analysis**: Provides targeted advice for specific methods like `DB::transaction()` and `DB::table()`.
+- **Expanded Support**: Added global path helpers (`app_path`, `base_path`, etc.), `File`, and `Validator` facades.
 
 ### 1.2.2
 - **Architecture Mentorship Expansion**:

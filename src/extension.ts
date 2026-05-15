@@ -32,7 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
     ]);
 
     const hoverProvider = new FacadeHoverProvider(definitionFinder, facadeResolver);
-    const codeLensProvider = new FacadeCodeLensProvider();
+    const codeLensProvider = new FacadeCodeLensProvider(facadeResolver);
     const codeActionProvider = new ArchitecturalCodeActionProvider(facadeResolver);
 
     // Languages to support

@@ -13,5 +13,5 @@ export interface IFacadeResolver {
      * @param accessor The accessor string (e.g., 'hash')
      * @returns The FacadeResolution object, or null if not found.
      */
-    resolve(accessor: string): Promise<FacadeResolution | null>;
+    resolve(accessor: string, method?: string): Promise<FacadeResolution | null>;
 }
